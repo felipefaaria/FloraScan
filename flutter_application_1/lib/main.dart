@@ -12,12 +12,68 @@ class FloraScanApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        textTheme: GoogleFonts.latoTextTheme(),
+        scaffoldBackgroundColor: Color(0xFF0B3B17), // Fundo verde escuro
+        primaryColor: Color(0xFFB0B0B0), // Cinza médio
+
+        textTheme: GoogleFonts.latoTextTheme().apply(
+          bodyColor: Color(0xFFB0B0B0),
+          displayColor: Color(0xFFB0B0B0),
+        ),
+
+        inputDecorationTheme: InputDecorationTheme(
+          labelStyle: TextStyle(color: Color(0xFFB0B0B0)),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFFB0B0B0)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFFB0B0B0)),
+          ),
+        ),
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFFB0B0B0), // botão cinza
+            foregroundColor: Color(0xFF0B3B17), // texto escuro no botão
+          ),
+        ),
+
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Color(0xFFB0B0B0),
+            side: BorderSide(color: Color(0xFFB0B0B0)),
+          ),
+        ),
+
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: Color(0xFFB0B0B0),
+          ),
+        ),
+
+        iconTheme: IconThemeData(color: Color(0xFFB0B0B0)),
+
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xFF0B3B17),
+          foregroundColor: Color(0xFFB0B0B0),
+          elevation: 0,
+        ),
+
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFF0B3B17),
+          selectedItemColor: Color(0xFFB0B0B0),
+          unselectedItemColor: Color(0xFFB0B0B0).withOpacity(0.6),
+        ),
       ),
       home: LoginScreen(),
     );
   }
 }
+
+
+
+
+
+
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -80,6 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
 class CameraScreen extends StatelessWidget {
   final VoidCallback onTakePhoto;
 
@@ -273,7 +330,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(radius: 50, backgroundImage: AssetImage('assets/profile.jpg')),
+            Text(
+              "Página de perfil",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 20),
 
             if (isEditing) ...[
@@ -299,7 +359,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text("Email: ${widget.email}", style: TextStyle(fontSize: 18)),
               Text("Celular: ${widget.phone}", style: TextStyle(fontSize: 18)),
               SizedBox(height: 20),
-              OutlinedButton(onPressed: () => setState(() => isEditing = true), child: Text("Editar Informações")),
+              OutlinedButton(
+                onPressed: () => setState(() => isEditing = true),
+                child: Text("Editar Informações"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AboutScreen()),
+                  );
+                },
+                child: Text("Sobre o app"),
+              ),
             ],
           ],
         ),
@@ -307,3 +379,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+
+class AboutScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Sobre o app")),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Text(
+          """O Flora Scan é um aplicativo dedicado a ajudar entusiastas e profissionais a identificar, registrar e conhecer melhor as plantas ao seu redor. Desenvolvido com carinho, o app tem o objetivo de promover a conscientização ambiental, facilitar o estudo da flora local e ajudar em hobbies relacionados à plantação.
+
+O app permite que os usuários tirem fotos de plantas e recebam informações gerais sobre elas. Além disso, o aplicativo oferece dicas de cuidados e informações sobre o habitat das plantas, tornando-se uma verdadeira ajuda para amantes da natureza.
+
+Desenvolvido por:
+FELIPE SILVA FARIA
+HUGO ALVES DUARTE
+MATHEUS HENRIQUE GONÇALVES
+PEDRO HENRIQUE GAIOSO DE OLIVEIRA
+""",
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
