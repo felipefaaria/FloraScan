@@ -12,8 +12,8 @@ class FloraScanApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: Color(0xFF0B3B17), // Fundo verde escuro
-        primaryColor: Color(0xFFB0B0B0), // Cinza médio
+        scaffoldBackgroundColor: Color(0xFF0B3B17),
+        primaryColor: Color(0xFFB0B0B0),
 
         textTheme: GoogleFonts.latoTextTheme().apply(
           bodyColor: Color(0xFFB0B0B0),
@@ -32,8 +32,8 @@ class FloraScanApp extends StatelessWidget {
 
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFFB0B0B0), // botão cinza
-            foregroundColor: Color(0xFF0B3B17), // texto escuro no botão
+            backgroundColor: Color(0xFFB0B0B0),
+            foregroundColor: Color(0xFF0B3B17),
           ),
         ),
 
@@ -64,13 +64,75 @@ class FloraScanApp extends StatelessWidget {
           unselectedItemColor: Color(0xFFB0B0B0).withOpacity(0.6),
         ),
       ),
-      home: LoginScreen(),
+      home: WelcomeScreen(),
     );
   }
 }
 
 
 
+
+class WelcomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFF0B3B17),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.eco,
+                size: 100,
+                color: Color(0xFFB0B0B0),
+              ),
+              SizedBox(height: 20),
+              Text(
+                "Bem-vindo ao Flora Scan",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.lato(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB0B0B0),
+                ),
+              ),
+              SizedBox(height: 30),
+              ElevatedButton(
+                child: Text("Entrar como visitante"),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => HomeScreen(
+                        name: '',
+                        profession: '',
+                        email: '',
+                        phone: '',
+                        password: '',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: 10),
+              OutlinedButton(
+                child: Text("Cadastrar-se"),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => LoginScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 
 
@@ -303,23 +365,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _saveChanges() {
-    if (_passwordController.text == widget.correctPassword) {
-      widget.onUpdate(
-        _nameController.text,
-        _professionController.text,
-        _emailController.text,
-        _phoneController.text,
-      );
-      setState(() {
-        isEditing = false;
-        errorMessage = null;
-      });
-    } else {
-      setState(() {
-        errorMessage = "Senha incorreta!";
-      });
-    }
+  // Cadastro novo ou edição
+  if (widget.correctPassword.isEmpty || _passwordController.text == widget.correctPassword) {
+    widget.onUpdate(
+      _nameController.text,
+      _professionController.text,
+      _emailController.text,
+      _phoneController.text,
+    );
+    setState(() {
+      isEditing = false;
+      errorMessage = null;
+    });
+  } else {
+    setState(() {
+      errorMessage = "Senha incorreta!";
+    });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
