@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,6 +10,8 @@ void main() {
 }
 
 class FloraScanApp extends StatelessWidget {
+  const FloraScanApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -45,9 +50,7 @@ class FloraScanApp extends StatelessWidget {
         ),
 
         textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            foregroundColor: Color(0xFFB0B0B0),
-          ),
+          style: TextButton.styleFrom(foregroundColor: Color(0xFFB0B0B0)),
         ),
 
         iconTheme: IconThemeData(color: Color(0xFFB0B0B0)),
@@ -69,10 +72,9 @@ class FloraScanApp extends StatelessWidget {
   }
 }
 
-
-
-
 class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,11 +85,7 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.eco,
-                size: 100,
-                color: Color(0xFFB0B0B0),
-              ),
+              Icon(Icons.eco, size: 100, color: Color(0xFFB0B0B0)),
               SizedBox(height: 20),
               Text(
                 "Bem-vindo ao Flora Scan",
@@ -105,13 +103,14 @@ class WelcomeScreen extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => HomeScreen(
-                        name: '',
-                        profession: '',
-                        email: '',
-                        phone: '',
-                        password: '',
-                      ),
+                      builder:
+                          (_) => HomeScreen(
+                            name: '',
+                            profession: '',
+                            email: '',
+                            phone: '',
+                            password: '',
+                          ),
                     ),
                   );
                 },
@@ -134,10 +133,9 @@ class WelcomeScreen extends StatelessWidget {
   }
 }
 
-
-
-
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -157,22 +155,59 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Flora Scan", style: GoogleFonts.lato(fontSize: 28, fontWeight: FontWeight.bold)),
+            Text(
+              "Flora Scan",
+              style: GoogleFonts.lato(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             SizedBox(height: 20),
 
-            TextField(controller: _nameController, decoration: InputDecoration(labelText: "Nome", border: OutlineInputBorder())),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: "Nome",
+                border: OutlineInputBorder(),
+              ),
+            ),
             SizedBox(height: 10),
 
-            TextField(controller: _professionController, decoration: InputDecoration(labelText: "Profissão", border: OutlineInputBorder())),
+            TextField(
+              controller: _professionController,
+              decoration: InputDecoration(
+                labelText: "Profissão",
+                border: OutlineInputBorder(),
+              ),
+            ),
             SizedBox(height: 10),
 
-            TextField(controller: _phoneController, decoration: InputDecoration(labelText: "Celular", border: OutlineInputBorder())),
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                labelText: "Celular",
+                border: OutlineInputBorder(),
+              ),
+            ),
             SizedBox(height: 10),
 
-            TextField(controller: _emailController, decoration: InputDecoration(labelText: "Email", border: OutlineInputBorder())),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: "Email",
+                border: OutlineInputBorder(),
+              ),
+            ),
             SizedBox(height: 10),
 
-            TextField(controller: _passwordController, obscureText: true, decoration: InputDecoration(labelText: "Senha", border: OutlineInputBorder())),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: "Senha",
+                border: OutlineInputBorder(),
+              ),
+            ),
             SizedBox(height: 10),
 
             ElevatedButton(
@@ -180,13 +215,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => HomeScreen(
-                      name: _nameController.text,
-                      profession: _professionController.text,
-                      email: _emailController.text,
-                      phone: _phoneController.text,
-                      password: _passwordController.text,
-                    ),
+                    builder:
+                        (context) => HomeScreen(
+                          name: _nameController.text,
+                          profession: _professionController.text,
+                          email: _emailController.text,
+                          phone: _phoneController.text,
+                          password: _passwordController.text,
+                        ),
                   ),
                 );
               },
@@ -202,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
 class CameraScreen extends StatelessWidget {
   final VoidCallback onTakePhoto;
 
-  CameraScreen({required this.onTakePhoto});
+  const CameraScreen({super.key, required this.onTakePhoto});
 
   @override
   Widget build(BuildContext context) {
@@ -212,10 +248,7 @@ class CameraScreen extends StatelessWidget {
         children: [
           Icon(Icons.camera_alt, size: 100),
           SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: onTakePhoto,
-            child: Text("Tirar Foto"),
-          ),
+          ElevatedButton(onPressed: onTakePhoto, child: Text("Tirar Foto")),
         ],
       ),
     );
@@ -225,31 +258,38 @@ class CameraScreen extends StatelessWidget {
 class DetailsScreen extends StatelessWidget {
   final String? lastPhotoPath;
 
-  DetailsScreen({this.lastPhotoPath});
+  const DetailsScreen({super.key, this.lastPhotoPath});
 
   @override
   Widget build(BuildContext context) {
+    if (lastPhotoPath != null) {
+      log("📸 Caminho da última foto: $lastPhotoPath");
+    }
     return Center(
-      child: lastPhotoPath == null
-          ? Text("Nenhuma foto tirada ainda")
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(lastPhotoPath!, height: 200),
-                SizedBox(height: 20),
-                Text(
-                  "Planta X",
-                  style: GoogleFonts.lato(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "🌿 Descrição: Lorem Ipsum\n📍 Habitat: Lorem Ipsum\n💧 Cuidados: Lorem Ipsum",
-                    textAlign: TextAlign.center,
+      child:
+          lastPhotoPath == null
+              ? Text("Nenhuma foto tirada ainda")
+              : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.file(File(lastPhotoPath!), height: 200),
+                  SizedBox(height: 20),
+                  Text(
+                    "Planta X",
+                    style: GoogleFonts.lato(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "🌿 Descrição: Lorem Ipsum\n📍 Habitat: Lorem Ipsum\n💧 Cuidados: Lorem Ipsum",
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
     );
   }
 }
@@ -261,7 +301,14 @@ class HomeScreen extends StatefulWidget {
   String phone;
   final String password;
 
-  HomeScreen({required this.name, required this.profession, required this.email, required this.phone, required this.password});
+  HomeScreen({
+    super.key,
+    required this.name,
+    required this.profession,
+    required this.email,
+    required this.phone,
+    required this.password,
+  });
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -282,7 +329,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void updateUserInfo(String newName, String newProfession, String newEmail, String newPhone) {
+  void updateUserInfo(
+    String newName,
+    String newProfession,
+    String newEmail,
+    String newPhone,
+  ) {
     setState(() {
       widget.name = newName;
       widget.profession = newProfession;
@@ -333,7 +385,8 @@ class ProfileScreen extends StatefulWidget {
   final Function(String, String, String, String) onUpdate;
   final String correctPassword;
 
-  ProfileScreen({
+  const ProfileScreen({
+    super.key,
     required this.userName,
     required this.userProfession,
     required this.email,
@@ -365,25 +418,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _saveChanges() {
-  // Cadastro novo ou edição
-  if (widget.correctPassword.isEmpty || _passwordController.text == widget.correctPassword) {
-    widget.onUpdate(
-      _nameController.text,
-      _professionController.text,
-      _emailController.text,
-      _phoneController.text,
-    );
-    setState(() {
-      isEditing = false;
-      errorMessage = null;
-    });
-  } else {
-    setState(() {
-      errorMessage = "Senha incorreta!";
-    });
+    // Cadastro novo ou edição
+    if (widget.correctPassword.isEmpty ||
+        _passwordController.text == widget.correctPassword) {
+      widget.onUpdate(
+        _nameController.text,
+        _professionController.text,
+        _emailController.text,
+        _phoneController.text,
+      );
+      setState(() {
+        isEditing = false;
+        errorMessage = null;
+      });
+    } else {
+      setState(() {
+        errorMessage = "Senha incorreta!";
+      });
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -401,25 +454,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 20),
 
             if (isEditing) ...[
-              TextField(controller: _nameController, decoration: InputDecoration(labelText: "Nome")),
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: "Nome"),
+              ),
               SizedBox(height: 10),
-              TextField(controller: _professionController, decoration: InputDecoration(labelText: "Profissão")),
+              TextField(
+                controller: _professionController,
+                decoration: InputDecoration(labelText: "Profissão"),
+              ),
               SizedBox(height: 10),
-              TextField(controller: _emailController, decoration: InputDecoration(labelText: "Email")),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: "Email"),
+              ),
               SizedBox(height: 10),
-              TextField(controller: _phoneController, decoration: InputDecoration(labelText: "Celular")),
+              TextField(
+                controller: _phoneController,
+                decoration: InputDecoration(labelText: "Celular"),
+              ),
               SizedBox(height: 10),
-              TextField(controller: _passwordController, obscureText: true, decoration: InputDecoration(labelText: "Confirme a senha")),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(labelText: "Confirme a senha"),
+              ),
               if (errorMessage != null)
                 Padding(
                   padding: EdgeInsets.only(top: 8),
-                  child: Text(errorMessage!, style: TextStyle(color: Colors.red)),
+                  child: Text(
+                    errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
               SizedBox(height: 20),
               ElevatedButton(onPressed: _saveChanges, child: Text("Salvar")),
             ] else ...[
               Text("Nome: ${widget.userName}", style: TextStyle(fontSize: 18)),
-              Text("Profissão: ${widget.userProfession}", style: TextStyle(fontSize: 18)),
+              Text(
+                "Profissão: ${widget.userProfession}",
+                style: TextStyle(fontSize: 18),
+              ),
               Text("Email: ${widget.email}", style: TextStyle(fontSize: 18)),
               Text("Celular: ${widget.phone}", style: TextStyle(fontSize: 18)),
               SizedBox(height: 20),
@@ -444,8 +519,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-
 class AboutScreen extends StatelessWidget {
+  const AboutScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -469,4 +545,3 @@ PEDRO HENRIQUE GAIOSO DE OLIVEIRA
     );
   }
 }
-
