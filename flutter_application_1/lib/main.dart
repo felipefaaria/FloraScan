@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -235,6 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
+/*
 class CameraScreen extends StatelessWidget {
   final VoidCallback onTakePhoto;
 
@@ -293,6 +295,7 @@ class DetailsScreen extends StatelessWidget {
     );
   }
 }
+*/
 
 class HomeScreen extends StatefulWidget {
   String name;
@@ -318,6 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   String? lastPhotoPath;
 
+  /*
   void _takePhoto() async {
     final ImagePicker picker = ImagePicker();
     final XFile? photo = await picker.pickImage(source: ImageSource.camera);
@@ -328,6 +332,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+  */
 
   void updateUserInfo(
     String newName,
@@ -346,8 +351,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     List<Widget> pages = [
-      CameraScreen(onTakePhoto: _takePhoto),
-      DetailsScreen(lastPhotoPath: lastPhotoPath),
+      Grade(), //Grade adicionada!
+      //CameraScreen(onTakePhoto: _takePhoto),
+      //DetailsScreen(lastPhotoPath: lastPhotoPath),
       ProfileScreen(
         userName: widget.name,
         userProfession: widget.profession,
@@ -368,8 +374,8 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: "Foto"),
-          BottomNavigationBarItem(icon: Icon(Icons.info), label: "Detalhes"),
+          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: "Fotos"),
+          //BottomNavigationBarItem(icon: Icon(Icons.info), label: "Detalhes"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
         ],
       ),
@@ -540,6 +546,187 @@ MATHEUS HENRIQUE GONÇALVES
 PEDRO HENRIQUE GAIOSO DE OLIVEIRA
 """,
           style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
+class Grade extends StatefulWidget {
+  const Grade({super.key});
+
+  @override
+  State<Grade> createState() => _GradeState();
+}
+
+class _GradeState extends State<Grade> {
+  final List<FotoComNome> fotos = [];
+
+  Future<void> tirarFoto() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? novaFoto = await picker.pickImage(source: ImageSource.camera);
+
+    if (novaFoto != null) {
+      String? nome = await _pedirNomeDaFoto();
+      if (nome != null && nome.trim().isNotEmpty) {
+        setState(() {
+          fotos.add(FotoComNome(foto: novaFoto, nome: nome.trim()));
+        });
+      }
+    }
+  }
+
+  Future<String?> _pedirNomeDaFoto() async {
+    String nomeDigitado = '';
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Nome da Flor'),
+          content: TextField(
+            autofocus: true,
+            onChanged: (value) => nomeDigitado = value,
+            decoration: const InputDecoration(hintText: 'Digite um nome'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(nomeDigitado);
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B3B17),
+      floatingActionButton: FloatingActionButton(
+        onPressed: tirarFoto,
+        backgroundColor: Colors.white,
+        child: const Icon(Icons.camera_alt, color: Colors.black, size: 32),
+      ),
+      body:
+          fotos.isEmpty
+              ? const Center(
+                child: Text(
+                  'Nenhuma foto tirada ainda :(',
+                  //style: TextStyle(fontSize: 24, color: Colors.white),
+                ),
+              )
+              : GridView.count(
+                crossAxisCount: 3,
+                children: List.generate(fotos.length, (index) {
+                  final foto = fotos[index];
+                  return Container(
+                    margin: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      /*
+                      ! bordas visíveis
+                      border: Border.all(color: Colors.white, width: 2.0),
+                      borderRadius: BorderRadius.circular(8.0),
+                      */
+                      color: Color(0xFF0B3B17),
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6.0),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => FotoDetalhe(foto: foto),
+                                  ),
+                                );
+                              },
+                              child:
+                                  kIsWeb
+                                      ? Image.network(
+                                        foto.foto.path,
+                                        fit: BoxFit.cover,
+                                      )
+                                      : Image.file(
+                                        File(foto.foto.path),
+                                        fit: BoxFit.cover,
+                                      ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Text(
+                            foto.nome,
+                            style: const TextStyle(color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+    );
+  }
+}
+
+class FotoComNome {
+  final XFile foto;
+  final String nome;
+
+  FotoComNome({required this.foto, required this.nome});
+}
+
+class FotoDetalhe extends StatelessWidget {
+  final FotoComNome foto;
+
+  const FotoDetalhe({super.key, required this.foto});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B3B17),
+      appBar: AppBar(
+        title: Text(foto.nome),
+        backgroundColor: const Color(0xFF0B3B17),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            /*
+            ! Problemas com tamanho da foto
+            kIsWeb
+                ? Image.network(foto.foto.path)
+                : Image.file(File(foto.foto.path)),
+            */
+            Text(
+              "Planta X",
+              style: GoogleFonts.lato(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "🌿 Descrição: Lorem Ipsum\n📍 Habitat: Lorem Ipsum\n💧 Cuidados: Lorem Ipsum",
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
       ),
     );
