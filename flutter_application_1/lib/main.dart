@@ -1,12 +1,16 @@
 import 'dart:developer';
 import 'dart:io';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // Gerado pelo flutterfire configure
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(FloraScanApp());
 }
 
@@ -212,20 +216,53 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(height: 10),
 
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
+              onPressed: () async {
+                try {
+                  final credential = await FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim(),
+                      );
+
+                  // Se cadastrou com sucesso, vai para HomeScreen
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => HomeScreen(
+                            name: _nameController.text,
+                            profession: _professionController.text,
+                            email: _emailController.text,
+                            phone: _phoneController.text,
+                            password: _passwordController.text,
+                          ),
+                    ),
+                  );
+                } on FirebaseAuthException catch (e) {
+                  String errorMsg = 'Erro ao cadastrar';
+                  if (e.code == 'weak-password') {
+                    errorMsg = 'A senha é muito fraca.';
+                  } else if (e.code == 'email-already-in-use') {
+                    errorMsg = 'Este e-mail já está em uso.';
+                  } else if (e.code == 'invalid-email') {
+                    errorMsg = 'E-mail inválido.';
+                  }
+
+                  showDialog(
+                    context: context,
                     builder:
-                        (context) => HomeScreen(
-                          name: _nameController.text,
-                          profession: _professionController.text,
-                          email: _emailController.text,
-                          phone: _phoneController.text,
-                          password: _passwordController.text,
+                        (context) => AlertDialog(
+                          title: Text("Erro"),
+                          content: Text(errorMsg),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text("OK"),
+                            ),
+                          ],
                         ),
-                  ),
-                );
+                  );
+                }
               },
               child: Text("Continuar"),
             ),

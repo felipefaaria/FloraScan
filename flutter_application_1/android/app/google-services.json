@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1075398568719",
+    "project_id": "florascan-d4001",
+    "storage_bucket": "florascan-d4001.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1075398568719:android:cb68ea2ba4d2e9f71bec7a",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvIhmWLozeCp0Mg4ufcnBrD2frXKGGnbk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1075398568719:android:041a06538165d0941bec7a",
+        "android_client_info": {
+          "package_name": "com.puc.florascan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvIhmWLozeCp0Mg4ufcnBrD2frXKGGnbk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
