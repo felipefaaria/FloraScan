@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // Gerado pelo flutterfire configure
+import 'firebase_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,55 +21,36 @@ class FloraScanApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'FloraScan',
       theme: ThemeData(
-        scaffoldBackgroundColor: Color(0xFF0B3B17),
-        primaryColor: Color(0xFFB0B0B0),
-
-        textTheme: GoogleFonts.latoTextTheme().apply(
-          bodyColor: Color(0xFFB0B0B0),
-          displayColor: Color(0xFFB0B0B0),
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.white,
+        primaryColor: Color(0xFF4CAF50),
+        colorScheme: ColorScheme.light(
+          primary: Color(0xFF4CAF50),
+          secondary: Color(0xFFA5D6A7),
         ),
-
-        inputDecorationTheme: InputDecorationTheme(
-          labelStyle: TextStyle(color: Color(0xFFB0B0B0)),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFB0B0B0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFB0B0B0)),
-          ),
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(color: Color(0xFF2E7D32)),
+          bodyMedium: TextStyle(color: Color(0xFF2E7D32)),
         ),
-
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFFB0B0B0),
-            foregroundColor: Color(0xFF0B3B17),
-          ),
-        ),
-
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Color(0xFFB0B0B0),
-            side: BorderSide(color: Color(0xFFB0B0B0)),
-          ),
-        ),
-
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(foregroundColor: Color(0xFFB0B0B0)),
-        ),
-
-        iconTheme: IconThemeData(color: Color(0xFFB0B0B0)),
-
         appBarTheme: AppBarTheme(
-          backgroundColor: Color(0xFF0B3B17),
-          foregroundColor: Color(0xFFB0B0B0),
+          backgroundColor: Colors.white,
+          foregroundColor: Color(0xFF2E7D32),
           elevation: 0,
         ),
-
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF0B3B17),
-          selectedItemColor: Color(0xFFB0B0B0),
-          unselectedItemColor: Color(0xFFB0B0B0).withOpacity(0.6),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF4CAF50),
+            foregroundColor: Colors.white,
+            textStyle: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Color(0xFF4CAF50),
+            side: BorderSide(color: Color(0xFF4CAF50)),
+          ),
         ),
       ),
       home: WelcomeScreen(),
@@ -83,7 +64,6 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0B3B17),
       body: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 30),
@@ -102,31 +82,23 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 30),
-              ElevatedButton(
-                child: Text("Entrar como visitante"),
+              OutlinedButton(
+                child: Text("Login"),
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => HomeScreen(
-                            name: '',
-                            profession: '',
-                            email: '',
-                            phone: '',
-                            password: '',
-                          ),
-                    ),
+                    MaterialPageRoute(builder: (_) => LoginScreen()),
                   );
                 },
               ),
+
               SizedBox(height: 10),
               OutlinedButton(
                 child: Text("Cadastrar-se"),
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (_) => LoginScreen()),
+                    MaterialPageRoute(builder: (_) => SignUpScreen()),
                   );
                 },
               ),
@@ -138,14 +110,14 @@ class WelcomeScreen extends StatelessWidget {
   }
 }
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _SignUpScreenState createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -273,6 +245,171 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  String? errorMessage;
+
+  Future<void> _login() async {
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => HomeScreen(
+                email: _emailController.text,
+                password: _passwordController.text,
+              ),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        if (e.code == 'user-not-found') {
+          errorMessage = 'Usuário não encontrado.';
+        } else if (e.code == 'wrong-password') {
+          errorMessage = 'Senha incorreta.';
+        } else {
+          errorMessage = 'Erro ao fazer login.';
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Entrar",
+              style: GoogleFonts.lato(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(labelText: "Email"),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: "Senha"),
+            ),
+            if (errorMessage != null) ...[
+              SizedBox(height: 10),
+              Text(errorMessage!, style: TextStyle(color: Colors.red)),
+            ],
+            SizedBox(height: 20),
+            ElevatedButton(onPressed: _login, child: Text("Entrar")),
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SignUpScreen(),
+                  ), // tela de cadastro
+                );
+              },
+              child: Text("Criar conta"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class InitialHomeScreen extends StatelessWidget {
+  const InitialHomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.local_florist, size: 100, color: Color(0xFFB0B0B0)),
+              SizedBox(height: 20),
+              Text(
+                "FloraScan",
+                style: GoogleFonts.lato(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB0B0B0),
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Identifique plantas e aprenda a cuidar delas com facilidade.",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.lato(fontSize: 16, color: Color(0xFFB0B0B0)),
+              ),
+              SizedBox(height: 40),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MyGardenScreen()),
+                  );
+                },
+                icon: Icon(Icons.photo),
+                label: Text("Meu Jardim"),
+              ),
+              SizedBox(height: 20),
+              OutlinedButton.icon(
+                onPressed: () {
+                  // Futuro: levar para dicas
+                },
+                icon: Icon(Icons.local_florist),
+                label: Text("Dicas de Cuidados"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MyGardenScreen extends StatelessWidget {
+  const MyGardenScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Meu Jardim")),
+      body: Center(
+        child: Text(
+          "Suas fotos de plantas aparecerão aqui.",
+          style: GoogleFonts.lato(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
 /*
 class CameraScreen extends StatelessWidget {
   final VoidCallback onTakePhoto;
@@ -343,11 +480,11 @@ class HomeScreen extends StatefulWidget {
 
   HomeScreen({
     super.key,
-    required this.name,
-    required this.profession,
-    required this.email,
-    required this.phone,
-    required this.password,
+    this.name = '', // Definindo valores padrão
+    this.profession = '',
+    this.email = '',
+    this.phone = '',
+    this.password = '', // Definindo valores padrão
   });
 
   @override
@@ -388,6 +525,57 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     List<Widget> pages = [
+      // Tela inicial com os componentes de InitialHomeScreen
+      Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.local_florist, size: 100, color: Color(0xFFB0B0B0)),
+                SizedBox(height: 20),
+                Text(
+                  "FloraScan",
+                  style: GoogleFonts.lato(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFB0B0B0),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Identifique plantas e aprenda a cuidar delas com facilidade.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: Color(0xFFB0B0B0),
+                  ),
+                ),
+                SizedBox(height: 40),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => MyGardenScreen()),
+                    );
+                  },
+                  icon: Icon(Icons.photo),
+                  label: Text("Meu Jardim"),
+                ),
+                SizedBox(height: 20),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    // Futuro: levar para dicas
+                  },
+                  icon: Icon(Icons.local_florist),
+                  label: Text("Dicas de Cuidados"),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
       Grade(), //Grade adicionada!
       //CameraScreen(onTakePhoto: _takePhoto),
       //DetailsScreen(lastPhotoPath: lastPhotoPath),
@@ -411,8 +599,11 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: "Fotos"),
-          //BottomNavigationBarItem(icon: Icon(Icons.info), label: "Detalhes"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera_alt),
+            label: "Inicial",
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.info), label: "Foto"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
         ],
       ),
@@ -646,7 +837,6 @@ class _GradeState extends State<Grade> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B3B17),
       floatingActionButton: FloatingActionButton(
         onPressed: tirarFoto,
         backgroundColor: Colors.white,
@@ -734,7 +924,6 @@ class FotoDetalhe extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B3B17),
       appBar: AppBar(
         title: Text(foto.nome),
         backgroundColor: const Color(0xFF0B3B17),
