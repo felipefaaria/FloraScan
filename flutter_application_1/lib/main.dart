@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,52 +10,77 @@ import 'package:image_picker/image_picker.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(FloraScanApp());
+
+  runApp(const FloraScanApp());
 }
+
+
 
 class FloraScanApp extends StatelessWidget {
   const FloraScanApp({super.key});
 
+  Future<void> _initializeGuest() async {
+    final auth = FirebaseAuth.instance;
+    if (auth.currentUser == null) {
+      await auth.signInAnonymously();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'FloraScan',
-      theme: ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: Colors.white,
-        primaryColor: Color(0xFF4CAF50),
-        colorScheme: ColorScheme.light(
-          primary: Color(0xFF4CAF50),
-          secondary: Color(0xFFA5D6A7),
-        ),
-        textTheme: TextTheme(
-          bodyLarge: TextStyle(color: Color(0xFF2E7D32)),
-          bodyMedium: TextStyle(color: Color(0xFF2E7D32)),
-        ),
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Color(0xFF2E7D32),
-          elevation: 0,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF4CAF50),
-            foregroundColor: Colors.white,
-            textStyle: TextStyle(fontWeight: FontWeight.bold),
+    return FutureBuilder(
+      future: _initializeGuest(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Tela de loading enquanto aguarda o login anônimo
+          return const MaterialApp(
+            home: Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'FloraScan',
+          theme: ThemeData(
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: Colors.white,
+            primaryColor: Color(0xFF4CAF50),
+            colorScheme: ColorScheme.light(
+              primary: Color(0xFF4CAF50),
+              secondary: Color(0xFFA5D6A7),
+            ),
+            textTheme: TextTheme(
+              bodyLarge: TextStyle(color: Color(0xFF2E7D32)),
+              bodyMedium: TextStyle(color: Color(0xFF2E7D32)),
+            ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: Colors.white,
+              foregroundColor: Color(0xFF2E7D32),
+              elevation: 0,
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+                textStyle: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Color(0xFF4CAF50),
+                side: BorderSide(color: Color(0xFF4CAF50)),
+              ),
+            ),
           ),
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Color(0xFF4CAF50),
-            side: BorderSide(color: Color(0xFF4CAF50)),
-          ),
-        ),
-      ),
-      home: WelcomeScreen(),
+          home: HomeScreen(), // Você pode redirecionar para outra tela se quiser
+        );
+      },
     );
   }
 }
+
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -70,7 +94,7 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.eco, size: 100, color: Color(0xFFB0B0B0)),
+              Icon(Icons.eco, size: 100, color: Color.fromARGB(255, 0, 141, 31)),
               SizedBox(height: 20),
               Text(
                 "Bem-vindo ao Flora Scan",
@@ -78,7 +102,7 @@ class WelcomeScreen extends StatelessWidget {
                 style: GoogleFonts.lato(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFB0B0B0),
+                  color: Color.fromARGB(255, 0, 141, 31),
                 ),
               ),
               SizedBox(height: 30),
@@ -350,21 +374,27 @@ class InitialHomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.local_florist, size: 100, color: Color(0xFFB0B0B0)),
+              // ✅ Ícone com cor verde
+              Icon(Icons.local_florist, size: 100, color: Color.fromARGB(255, 0, 141, 31)),
               SizedBox(height: 20),
+              // ✅ Título em verde
               Text(
                 "FloraScan",
                 style: GoogleFonts.lato(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFB0B0B0),
+                  color: Color.fromARGB(255, 0, 141, 31),
                 ),
               ),
               SizedBox(height: 10),
+              // ✅ Subtítulo em verde escuro
               Text(
                 "Identifique plantas e aprenda a cuidar delas com facilidade.",
                 textAlign: TextAlign.center,
-                style: GoogleFonts.lato(fontSize: 16, color: Color(0xFFB0B0B0)),
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: Color(0xFF2E7D32),
+                ),
               ),
               SizedBox(height: 40),
               ElevatedButton.icon(
@@ -392,6 +422,7 @@ class InitialHomeScreen extends StatelessWidget {
     );
   }
 }
+
 
 class MyGardenScreen extends StatelessWidget {
   const MyGardenScreen({super.key});
@@ -533,14 +564,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.local_florist, size: 100, color: Color(0xFFB0B0B0)),
+                Icon(Icons.local_florist, size: 100, color: Color.fromARGB(255, 0, 141, 31)),
                 SizedBox(height: 20),
                 Text(
                   "FloraScan",
                   style: GoogleFonts.lato(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFB0B0B0),
+                    color: Color.fromARGB(255, 0, 141, 31),
                   ),
                 ),
                 SizedBox(height: 10),
@@ -549,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.lato(
                     fontSize: 16,
-                    color: Color(0xFFB0B0B0),
+                    color: Color.fromARGB(255, 0, 141, 31),
                   ),
                 ),
                 SizedBox(height: 40),
@@ -652,7 +683,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _saveChanges() {
-    // Cadastro novo ou edição
     if (widget.correctPassword.isEmpty ||
         _passwordController.text == widget.correctPassword) {
       widget.onUpdate(
@@ -674,82 +704,119 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 30),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              "Página de perfil",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
+    final user = FirebaseAuth.instance.currentUser;
 
-            if (isEditing) ...[
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: "Nome"),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _professionController,
-                decoration: InputDecoration(labelText: "Profissão"),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: "Email"),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _phoneController,
-                decoration: InputDecoration(labelText: "Celular"),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(labelText: "Confirme a senha"),
-              ),
-              if (errorMessage != null)
-                Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    errorMessage!,
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
+    if (user == null || user.isAnonymous) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.person_outline, size: 80, color: Color(0xFF4CAF50)),
               SizedBox(height: 20),
-              ElevatedButton(onPressed: _saveChanges, child: Text("Salvar")),
-            ] else ...[
-              Text("Nome: ${widget.userName}", style: TextStyle(fontSize: 18)),
               Text(
-                "Profissão: ${widget.userProfession}",
+                "Você está usando como convidado.",
                 style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
               ),
-              Text("Email: ${widget.email}", style: TextStyle(fontSize: 18)),
-              Text("Celular: ${widget.phone}", style: TextStyle(fontSize: 18)),
               SizedBox(height: 20),
-              OutlinedButton(
-                onPressed: () => setState(() => isEditing = true),
-                child: Text("Editar Informações"),
-              ),
-              TextButton(
+              ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => AboutScreen()),
+                    MaterialPageRoute(builder: (_) => LoginScreen()),
                   );
                 },
-                child: Text("Sobre o app"),
+                child: Text("Fazer Login"),
+              ),
+              OutlinedButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => SignUpScreen()),
+                  );
+                },
+                child: Text("Cadastrar-se"),
               ),
             ],
-          ],
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    return SizedBox.expand(
+  child: Padding(
+    padding: EdgeInsets.symmetric(horizontal: 30),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          "Página de perfil",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 20),
+        if (isEditing) ...[
+          TextField(
+            controller: _nameController,
+            decoration: InputDecoration(labelText: "Nome"),
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: _professionController,
+            decoration: InputDecoration(labelText: "Profissão"),
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: _emailController,
+            decoration: InputDecoration(labelText: "Email"),
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: _phoneController,
+            decoration: InputDecoration(labelText: "Celular"),
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            decoration: InputDecoration(labelText: "Confirme a senha"),
+          ),
+          if (errorMessage != null)
+            Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(
+                errorMessage!,
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          SizedBox(height: 20),
+          ElevatedButton(onPressed: _saveChanges, child: Text("Salvar")),
+        ] else ...[
+          Text("Nome: ${widget.userName}", style: TextStyle(fontSize: 18)),
+          Text("Profissão: ${widget.userProfession}", style: TextStyle(fontSize: 18)),
+          Text("Email: ${widget.email}", style: TextStyle(fontSize: 18)),
+          Text("Celular: ${widget.phone}", style: TextStyle(fontSize: 18)),
+          SizedBox(height: 20),
+          OutlinedButton(
+            onPressed: () => setState(() => isEditing = true),
+            child: Text("Editar Informações"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutScreen()),
+              );
+            },
+            child: Text("Sobre o app"),
+          ),
+        ],
+      ],
+    ),
+  ),
+);
   }
 }
 
