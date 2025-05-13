@@ -1,20 +1,29 @@
 import 'dart:io';
+import 'package:flutter_application_1/database/db.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializa o databaseFactory se for desktop
+  if (defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.linux ||
+      defaultTargetPlatform == TargetPlatform.macOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const FloraScanApp());
 }
-
-
 
 class FloraScanApp extends StatelessWidget {
   const FloraScanApp({super.key});
@@ -554,92 +563,53 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    List<Widget> pages = [
-      // Tela inicial com os componentes de InitialHomeScreen
-      Scaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.local_florist, size: 100, color: Color.fromARGB(255, 0, 141, 31)),
-                SizedBox(height: 20),
-                Text(
-                  "FloraScan",
-                  style: GoogleFonts.lato(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 0, 141, 31),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Identifique plantas e aprenda a cuidar delas com facilidade.",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.lato(
-                    fontSize: 16,
-                    color: Color.fromARGB(255, 0, 141, 31),
-                  ),
-                ),
-                SizedBox(height: 40),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => MyGardenScreen()),
-                    );
-                  },
-                  icon: Icon(Icons.photo),
-                  label: Text("Meu Jardim"),
-                ),
-                SizedBox(height: 20),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    // Futuro: levar para dicas
-                  },
-                  icon: Icon(Icons.local_florist),
-                  label: Text("Dicas de Cuidados"),
-                ),
-              ],
-            ),
-          ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: _getPage(_currentIndex),
+    bottomNavigationBar: BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.camera_alt),
+          label: "Inicial",
         ),
-      ),
-      Grade(), //Grade adicionada!
-      //CameraScreen(onTakePhoto: _takePhoto),
-      //DetailsScreen(lastPhotoPath: lastPhotoPath),
-      ProfileScreen(
+        BottomNavigationBarItem(
+          icon: Icon(Icons.photo_library),
+          label: "Fotos",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: "Perfil",
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _getPage(int index) {
+  switch (index) {
+    case 0:
+      return InitialHomeScreen();
+    case 1:
+      return Grade(); // Certifique-se que `Grade` está funcionando
+    case 2:
+      return ProfileScreen(
         userName: widget.name,
         userProfession: widget.profession,
         email: widget.email,
         phone: widget.phone,
         onUpdate: updateUserInfo,
         correctPassword: widget.password,
-      ),
-    ];
-
-    return Scaffold(
-      body: pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt),
-            label: "Inicial",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.info), label: "Foto"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
-        ],
-      ),
-    );
+      );
+    default:
+      return InitialHomeScreen();
   }
+}
 }
 
 class ProfileScreen extends StatefulWidget {
@@ -855,25 +825,53 @@ class Grade extends StatefulWidget {
 }
 
 class _GradeState extends State<Grade> {
-  final List<FotoComNome> fotos = [];
+  List<Map<String, dynamic>> plantas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    carregarPlantas();
+  }
+
+  Future<void> carregarPlantas() async {
+    try {
+      final dados = await DB.instance.getPlantasComCategoria();
+      setState(() {
+        plantas = dados;
+      });
+    } catch (e) {
+      print('❌ Erro ao carregar plantas: $e');
+      setState(() {
+        plantas = [];
+      });
+    }
+  }
 
   Future<void> tirarFoto() async {
-    final ImagePicker picker = ImagePicker();
+    final picker = ImagePicker();
     final XFile? novaFoto = await picker.pickImage(source: ImageSource.camera);
 
     if (novaFoto != null) {
       String? nome = await _pedirNomeDaFoto();
       if (nome != null && nome.trim().isNotEmpty) {
-        setState(() {
-          fotos.add(FotoComNome(foto: novaFoto, nome: nome.trim()));
-        });
+        try {
+          await DB.instance.insertPlanta({
+            'nome': nome.trim(),
+            'descricao': '',
+            'cuidados': '',
+            'imagemPath': novaFoto.path,
+            'categoria_id': null
+          });
+          await carregarPlantas();
+        } catch (e) {
+          print('❌ Erro ao salvar planta: $e');
+        }
       }
     }
   }
 
   Future<String?> _pedirNomeDaFoto() async {
     String nomeDigitado = '';
-
     return showDialog<String>(
       context: context,
       builder: (context) {
@@ -890,9 +888,7 @@ class _GradeState extends State<Grade> {
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(nomeDigitado);
-              },
+              onPressed: () => Navigator.of(context).pop(nomeDigitado),
               child: const Text('Salvar'),
             ),
           ],
@@ -909,72 +905,60 @@ class _GradeState extends State<Grade> {
         backgroundColor: Colors.white,
         child: const Icon(Icons.camera_alt, color: Colors.black, size: 32),
       ),
-      body:
-          fotos.isEmpty
-              ? const Center(
-                child: Text(
-                  'Nenhuma foto tirada ainda :(',
-                  //style: TextStyle(fontSize: 24, color: Colors.white),
-                ),
-              )
-              : GridView.count(
-                crossAxisCount: 3,
-                children: List.generate(fotos.length, (index) {
-                  final foto = fotos[index];
-                  return Container(
-                    margin: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      /*
-                      ! bordas visíveis
-                      border: Border.all(color: Colors.white, width: 2.0),
-                      borderRadius: BorderRadius.circular(8.0),
-                      */
-                      color: Color(0xFF0B3B17),
-                    ),
-                    child: Column(
-                      children: [
+      body: plantas.isEmpty
+          ? const Center(child: Text('Nenhuma foto tirada ainda :('))
+          : GridView.count(
+              crossAxisCount: 3,
+              children: List.generate(plantas.length, (index) {
+                final planta = plantas[index];
+                final imagemPath = planta['imagemPath'];
+
+                return Container(
+                  margin: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(color: const Color(0xFF0B3B17)),
+                  child: Column(
+                    children: [
+                      if (imagemPath != null && File(imagemPath).existsSync())
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(6.0),
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => FotoDetalhe(foto: foto),
-                                  ),
-                                );
-                              },
-                              child:
-                                  kIsWeb
-                                      ? Image.network(
-                                        foto.foto.path,
-                                        fit: BoxFit.cover,
-                                      )
-                                      : Image.file(
-                                        File(foto.foto.path),
-                                        fit: BoxFit.cover,
-                                      ),
+                            child: Image.file(
+                              File(imagemPath),
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: Text(
-                            foto.nome,
-                            style: const TextStyle(color: Colors.white),
-                            overflow: TextOverflow.ellipsis,
+                        )
+                      else
+                        const Expanded(
+                          child: Center(
+                            child: Icon(Icons.image_not_supported, color: Colors.white70),
                           ),
                         ),
-                      ],
-                    ),
-                  );
-                }),
-              ),
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Text(
+                          planta['nome'] ?? 'Sem nome',
+                          style: const TextStyle(color: Colors.white),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4.0),
+                        child: Text(
+                          planta['categoria_nome'] ?? 'Sem categoria',
+                          style: const TextStyle(fontSize: 10, color: Colors.white70),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
     );
   }
 }
+
 
 class FotoComNome {
   final XFile foto;
