@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
 
 class DB {
   DB._();
@@ -14,7 +15,11 @@ class DB {
   }
 
   Future<Database> _initDatabase() async {
-    final path = join(await getDatabasesPath(), 'plantas.db');
+    final databasesPath = await getDatabasesPath();
+    final path = join(databasesPath, 'plantas.db');
+    debugPrint(
+      'Database Path: $path',
+    ); // Imprimindo o caminho do banco de dados
     return await openDatabase(
       path,
       version: 1,
@@ -49,7 +54,11 @@ class DB {
     ''');
   }
 
-  Future<void> _onUpgradeSafe(Database db, int oldVersion, int newVersion) async {
+  Future<void> _onUpgradeSafe(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
     if (oldVersion < newVersion) {
       await db.execute('DROP TABLE IF EXISTS plantas;');
       await db.execute('DROP TABLE IF EXISTS categoria;');
@@ -63,10 +72,24 @@ class DB {
     return await db.insert('categoria', {'nome': nome});
   }
 
-  // Inserir planta
+  // Inserir planta e retornar todos os elementos da tabela plantas no console
   Future<int> insertPlanta(Map<String, dynamic> planta) async {
     final db = await database;
-    return await db.insert('plantas', planta);
+    final id = await db.insert('plantas', planta);
+
+    // Busca todos os elementos da tabela plantas
+    final todasPlantas = await db.query('plantas');
+
+    // Imprime os elementos no console
+    debugPrint(
+      '\n\n\n\n\n=== Conteúdo da tabela plantas (após inserção com id: $id) ===',
+    );
+    for (var row in todasPlantas) {
+      debugPrint(row.toString());
+    }
+    debugPrint('============================================================');
+
+    return id;
   }
 
   // Atualizar planta
